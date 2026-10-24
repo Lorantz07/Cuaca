@@ -47,17 +47,17 @@
 
   const WEATHER_TINTS = {
     "clear-day": "rgba(251, 191, 36, 0.20)",
-    "clear-night": "rgba(129, 140, 248, 0.20)",
+    "clear-night": "rgba(125, 150, 180, 0.18)",
     "partly-cloudy-day": "rgba(147, 197, 253, 0.18)",
-    "partly-cloudy-night": "rgba(129, 140, 248, 0.17)",
+    "partly-cloudy-night": "rgba(125, 150, 180, 0.17)",
     overcast: "rgba(148, 163, 184, 0.16)",
     fog: "rgba(203, 213, 225, 0.15)",
     drizzle: "rgba(96, 165, 250, 0.18)",
     rain: "rgba(59, 130, 246, 0.21)",
     sleet: "rgba(125, 211, 252, 0.18)",
     snow: "rgba(226, 232, 240, 0.20)",
-    thunderstorms: "rgba(167, 139, 250, 0.24)",
-    hail: "rgba(192, 132, 252, 0.22)"
+    thunderstorms: "rgba(100, 116, 139, 0.22)",
+    hail: "rgba(120, 140, 160, 0.20)"
   };
 
   const AQI_LEVELS = [
@@ -167,12 +167,27 @@
     const header = $(".site-header");
     if (!header) return;
 
+    let scrolled = false;
+    let ticking = false;
+
     const update = () => {
-      header.classList.toggle("is-scrolled", window.scrollY > 12);
+      ticking = false;
+      const y = window.scrollY;
+      const next = scrolled ? y > 8 : y > 24;
+
+      if (next === scrolled) return;
+      scrolled = next;
+      header.classList.toggle("is-scrolled", next);
+    };
+
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
     };
 
     update();
-    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
   }
 
   function initMenu() {
@@ -841,17 +856,6 @@
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     svg.setAttribute("preserveAspectRatio", "none");
     svg.innerHTML = `
-      <defs>
-        <linearGradient id="chart-line" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#7dd3fc"></stop>
-          <stop offset="0.55" stop-color="#a78bfa"></stop>
-          <stop offset="1" stop-color="#f0abfc"></stop>
-        </linearGradient>
-        <linearGradient id="chart-fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#a78bfa" stop-opacity="0.30"></stop>
-          <stop offset="1" stop-color="#a78bfa" stop-opacity="0"></stop>
-        </linearGradient>
-      </defs>
       <path class="chart-area" d="${area}"></path>
       <path class="chart-line" d="${line}" pathLength="1"></path>
       ${points.map((point, index) => `<circle class="chart-dot${index === 0 ? " chart-dot--now" : ""}" cx="${point.x}" cy="${point.y}" r="${index === 0 ? 3.4 : 2.3}"></circle>`).join("")}
