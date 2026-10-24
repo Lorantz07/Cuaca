@@ -107,7 +107,6 @@
   function init() {
     initTheme();
     initHeader();
-    initMenu();
     initSearch();
     initKeyboardScrollers();
     initScrollSpy();
@@ -188,52 +187,6 @@
 
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
-  }
-
-  function initMenu() {
-    const toggle = $("#menu-toggle");
-    const nav = $("#primary-nav");
-    if (!toggle || !nav) return;
-
-    const setOpen = (open) => {
-      nav.classList.toggle("is-open", open);
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.setAttribute("aria-label", open ? "Tutup menu" : "Buka menu");
-    };
-
-    toggle.addEventListener("click", () => {
-      setOpen(!nav.classList.contains("is-open"));
-    });
-
-    nav.addEventListener("click", (event) => {
-      if (event.target instanceof Element && event.target.closest("a")) {
-        setOpen(false);
-      }
-    });
-
-    document.addEventListener("click", (event) => {
-      if (!nav.classList.contains("is-open")) return;
-      if (!(event.target instanceof Node)) return;
-      if (nav.contains(event.target) || toggle.contains(event.target)) return;
-      setOpen(false);
-    });
-
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape" || !nav.classList.contains("is-open")) return;
-      setOpen(false);
-      toggle.focus();
-    });
-
-    const desktop = window.matchMedia("(min-width: 901px)");
-    const onChange = (event) => {
-      if (event.matches) setOpen(false);
-    };
-
-    if (typeof desktop.addEventListener === "function") {
-      desktop.addEventListener("change", onChange);
-    } else {
-      desktop.addListener(onChange);
-    }
   }
 
   function initScrollSpy() {

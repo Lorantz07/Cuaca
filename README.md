@@ -6,11 +6,15 @@ Dashboard cuaca statis dengan tampilan liquid glass, data live dari Open-Meteo, 
 
 - Pencarian kota dan chip kota populer: Jakarta, Bandung, Surabaya, Yogyakarta, Denpasar
 - Cuaca saat ini, prakiraan 24 jam, dan prakiraan 7 hari
+- Halaman **Cuaca Saya** untuk menyimpan hingga 8 kota/negara, lengkap dengan waktu setempat, suhu, kondisi, serta suhu tertinggi/terendah
+- Tombol `+` di header untuk membuka halaman Cuaca Saya; pada layar kecil tombol ini menggantikan menu navigasi
 - Kelembapan, kecepatan angin, peluang hujan, tekanan udara, UV, jarak pandang, serta matahari terbit/terbenam
 - Kualitas udara (US AQI dan PM2.5) dan saran cuaca harian
 - Tema gelap/terang yang tersimpan, kota terakhir yang berhasil dimuat juga diingat
 - Responsif untuk desktop dan ponsel; bagian per jam dan harian bisa digeser horizontal
 - Background dan ikon Meteocons disimpan secara lokal
+
+Daftar Cuaca Saya disimpan di `localStorage` browser pengguna. Tidak ada akun atau database, sehingga daftar tidak tersinkron antarperangkat dan hanya tersedia di browser yang sama. Menghapus data situs atau memakai mode privat akan menghapus daftar tersebut.
 
 ## Menjalankan secara lokal
 

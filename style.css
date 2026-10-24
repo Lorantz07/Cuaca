@@ -29,7 +29,6 @@
   --header-stroke-scrolled: rgba(255, 255, 255, 0.22);
   --header-elevation: 0 16px 38px rgba(2, 8, 23, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   --header-elevation-scrolled: 0 20px 46px rgba(2, 8, 23, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  --header-menu: #06101f;
   --brand-tile: rgba(255, 255, 255, 0.08);
   --brand-tile-stroke: rgba(255, 255, 255, 0.18);
   --brand-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 7px 16px rgba(2, 8, 23, 0.18);
@@ -82,7 +81,6 @@
   --header-stroke-scrolled: #ffffff;
   --header-elevation: 0 16px 38px rgba(21, 51, 99, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --header-elevation-scrolled: 0 20px 46px rgba(21, 51, 99, 0.17), inset 0 1px 0 #ffffff;
-  --header-menu: #fbfdff;
   --brand-tile: #0b1b3a;
   --brand-tile-stroke: rgba(11, 27, 58, 0.13);
   --brand-tile-shadow: 0 7px 16px rgba(11, 27, 58, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.16);
@@ -530,48 +528,53 @@ html[data-theme="light"] .theme-switch__btn[data-theme-value="light"] {
   box-shadow: 0 4px 13px rgba(21, 51, 99, 0.12);
 }
 
-.menu-toggle {
-  position: relative;
-  display: none;
-  width: 44px;
-  height: 44px;
+.header-add {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: none;
   place-items: center;
+  border: 1px solid rgba(230, 210, 181, 0.26);
   border-radius: 50%;
+  background:
+    radial-gradient(120% 120% at 30% 8%, rgba(255, 255, 255, 0.19), transparent 56%),
+    linear-gradient(145deg, rgba(230, 210, 181, 0.15), rgba(255, 255, 255, 0.04));
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.19), 0 5px 14px rgba(2, 8, 23, 0.12);
+  backdrop-filter: blur(14px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease), box-shadow 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.header-add .icon { width: 17px; height: 17px; }
+
+.header-add:hover {
+  border-color: rgba(230, 210, 181, 0.46);
+  background:
+    radial-gradient(120% 120% at 30% 8%, rgba(255, 255, 255, 0.24), transparent 56%),
+    linear-gradient(145deg, rgba(230, 210, 181, 0.25), rgba(255, 255, 255, 0.07));
   color: var(--text);
-  transition: background 0.18s var(--ease);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 8px 20px rgba(2, 8, 23, 0.18);
+  transform: translateY(-1px);
 }
 
-.menu-toggle:hover,
-.menu-toggle:focus-visible,
-.menu-toggle[aria-expanded="true"] { background: rgba(255, 255, 255, 0.10); }
+.header-add:active { transform: none; }
 
-[data-theme="light"] .menu-toggle:hover,
-[data-theme="light"] .menu-toggle:focus-visible,
-[data-theme="light"] .menu-toggle[aria-expanded="true"] { background: rgba(11, 27, 58, 0.07); }
-
-.menu-toggle__icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 21px;
-  height: 21px;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.18s var(--ease), transform 0.2s var(--ease);
+[data-theme="light"] .header-add {
+  border-color: rgba(122, 90, 46, 0.18);
+  background:
+    radial-gradient(120% 120% at 30% 8%, rgba(255, 255, 255, 0.92), transparent 58%),
+    linear-gradient(145deg, rgba(122, 90, 46, 0.10), rgba(255, 255, 255, 0.54));
+  box-shadow: inset 0 1px 0 #ffffff, 0 5px 14px rgba(21, 51, 99, 0.10);
 }
 
-.menu-toggle__icon--close {
-  opacity: 0;
-  transform: translate(-50%, -50%) rotate(-45deg) scale(0.82);
-}
-
-.menu-toggle[aria-expanded="true"] .menu-toggle__icon--menu {
-  opacity: 0;
-  transform: translate(-50%, -50%) rotate(45deg) scale(0.82);
-}
-
-.menu-toggle[aria-expanded="true"] .menu-toggle__icon--close {
-  opacity: 1;
-  transform: translate(-50%, -50%) rotate(0) scale(1);
+[data-theme="light"] .header-add:hover {
+  border-color: rgba(122, 90, 46, 0.34);
+  background:
+    radial-gradient(120% 120% at 30% 8%, #ffffff, transparent 58%),
+    linear-gradient(145deg, rgba(122, 90, 46, 0.16), rgba(255, 255, 255, 0.76));
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 #ffffff, 0 8px 20px rgba(21, 51, 99, 0.14);
 }
 
 /* =========================================================
@@ -1752,50 +1755,7 @@ body.is-loading .loading-bar { opacity: 1; }
 
   .header__actions { margin-left: auto; }
 
-  .nav {
-    position: absolute;
-    z-index: 2;
-    top: calc(100% + 8px);
-    right: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-    margin: 0;
-    padding: 8px;
-    border: 1px solid var(--header-stroke-scrolled);
-    border-radius: 20px;
-    background: var(--header-menu);
-    box-shadow: var(--header-elevation-scrolled);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px) scale(0.985);
-    transform-origin: top center;
-    transition: opacity 0.24s var(--ease), transform 0.24s var(--ease), visibility 0.24s var(--ease);
-  }
-
-  .nav.is-open {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-
-  .nav__link {
-    padding: 11px 13px;
-    border-radius: 13px;
-    font-size: 13px;
-  }
-
-  .nav__link::after { display: none; }
-
-  .nav__link.is-active {
-    background: var(--accent-soft);
-    color: var(--accent);
-  }
-
-  .menu-toggle { display: grid; }
+  .nav { display: none; }
 
   .hero { padding-top: 24px; }
   .hero__content { max-width: none; }
@@ -1888,8 +1848,8 @@ body.is-loading .loading-bar { opacity: 1; }
   .brand__mark { width: 34px; height: 34px; padding: 5px; border-radius: 11px; }
   .theme-switch { padding: 3px; }
   .theme-switch__btn { width: 31px; height: 27px; }
-  .menu-toggle { width: 42px; height: 42px; }
-  .menu-toggle__icon { width: 20px; height: 20px; }
+  .header-add { width: 42px; height: 42px; }
+  .header-add .icon { width: 20px; height: 20px; }
 
   .hero__title { font-size: 39px; }
   .hero__text { font-size: 13.5px; }
@@ -1931,7 +1891,7 @@ body.is-loading .loading-bar { opacity: 1; }
 
   .brand { gap: 7px; font-size: 16px; }
   .brand__mark { width: 32px; height: 32px; padding: 5px; border-radius: 10px; }
-  .menu-toggle { width: 40px; height: 40px; }
+  .header-add { width: 40px; height: 40px; }
 
   .hero__title { font-size: 35px; }
   .current__visual { width: 90px; height: 90px; }

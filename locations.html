@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuaca Saya — WeatherNow</title>
+  <meta name="description" content="Simpan dan pantau cuaca terkini di kota-kota favoritmu dalam satu halaman bersama WeatherNow.">
+  <meta name="theme-color" content="#071226" id="theme-color">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/partly-cloudy-day.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="locations.css">
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var forced = params.get('theme');
+        var saved = localStorage.getItem('weathernow:theme');
+        var system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        var theme = (forced === 'light' || forced === 'dark') ? forced : (saved === 'light' || saved === 'dark' ? saved : system);
+        document.documentElement.dataset.theme = theme;
+        var meta = document.getElementById('theme-color');
+        if (meta) meta.setAttribute('content', theme === 'light' ? '#dfefff' : '#071226');
+      } catch (error) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body class="locations-page">
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient__photo ambient__photo--night"></div>
+    <div class="ambient__photo ambient__photo--day"></div>
+    <div class="ambient__scrim"></div>
+    <div class="ambient__noise"></div>
+  </div>
+
+  <div class="loading-bar" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="header__inner header__inner--page">
+        <a class="page-back" href="index.html" aria-label="Kembali ke beranda WeatherNow">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 12H5"></path>
+            <path d="m11 18-6-6 6-6"></path>
+          </svg>
+        </a>
+
+        <div class="page-heading">
+          <span class="page-heading__eyebrow">WeatherNow</span>
+          <h1 class="page-heading__title">Cuaca Saya</h1>
+        </div>
+
+        <div class="header__actions">
+          <div class="theme-switch" role="group" aria-label="Pilih tema tampilan">
+            <button type="button" class="theme-switch__btn" data-theme-value="light" aria-label="Aktifkan mode terang" aria-pressed="false">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path>
+              </svg>
+            </button>
+            <button type="button" class="theme-switch__btn" data-theme-value="dark" aria-label="Aktifkan mode gelap" aria-pressed="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M20.3 14.2A8.4 8.4 0 0 1 9.8 3.7 8.5 8.5 0 1 0 20.3 14.2Z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="locations-main">
+    <div class="container">
+      <section class="locations-intro" aria-labelledby="locations-title">
+        <div class="locations-intro__copy">
+          <p class="section-kicker"><span class="section-kicker__dot" aria-hidden="true"></span> Koleksi lokasi</p>
+          <h2 class="locations-intro__title" id="locations-title">Cuaca di tempat<br><span>favoritmu.</span></h2>
+          <p class="locations-intro__text">Simpan kota yang sering kamu pantau. Tambahkan sekali, lalu lihat cuaca terbarunya kapan saja.</p>
+        </div>
+
+        <aside class="locations-stat" aria-label="Ringkasan lokasi tersimpan">
+          <span class="locations-stat__number" id="locations-count">0</span>
+          <span class="locations-stat__label">lokasi tersimpan</span>
+          <span class="locations-stat__note"><span class="locations-stat__dot" aria-hidden="true"></span> Hanya di perangkat ini</span>
+        </aside>
+      </section>
+
+      <section class="add-panel glass-card" id="tambah" aria-labelledby="add-title">
+        <div class="add-panel__head">
+          <span class="add-panel__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+          </span>
+          <div class="add-panel__copy">
+            <h2 class="add-panel__title" id="add-title">Tambah lokasi baru</h2>
+            <p class="add-panel__sub">Cari kota atau negara, lalu tambahkan ke koleksimu.</p>
+          </div>
+          <span class="add-panel__limit" id="locations-limit">0 / 8</span>
+        </div>
+
+        <form class="location-search" id="location-search" role="search" novalidate>
+          <svg class="location-search__icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5"></path>
+          </svg>
+          <label class="sr-only" for="location-input">Cari kota atau negara</label>
+          <input class="location-search__input" id="location-input" name="location" type="search" placeholder="Cari kota atau negara…" autocomplete="off" spellcheck="false" aria-describedby="search-feedback">
+          <button class="location-search__submit" id="location-submit" type="submit">
+            <span>Cari</span>
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12h14"></path>
+              <path d="m12 6 6 6-6 6"></path>
+            </svg>
+          </button>
+        </form>
+
+        <p class="search-feedback" id="search-feedback" role="status">Ketik nama kota untuk mulai mencari.</p>
+
+        <div class="quick-cities" aria-label="Kota populer">
+          <span class="quick-cities__label">Coba</span>
+          <button type="button" class="quick-city" data-query="Jakarta">Jakarta</button>
+          <button type="button" class="quick-city" data-query="Bandung">Bandung</button>
+          <button type="button" class="quick-city" data-query="Surabaya">Surabaya</button>
+          <button type="button" class="quick-city" data-query="Yogyakarta">Yogyakarta</button>
+          <button type="button" class="quick-city" data-query="Denpasar">Denpasar</button>
+          <button type="button" class="quick-city" data-query="Tokyo">Tokyo</button>
+        </div>
+
+        <div class="search-results" id="search-results" hidden aria-live="polite"></div>
+      </section>
+
+      <section class="saved-section" aria-labelledby="saved-title">
+        <div class="section-head">
+          <div>
+            <h2 class="section-head__title" id="saved-title">Lokasi tersimpan</h2>
+            <p class="section-head__sub" id="saved-subtitle">Menyiapkan daftar lokasi…</p>
+          </div>
+          <button type="button" class="refresh-button" id="refresh-locations" aria-label="Perbarui cuaca semua lokasi">
+            <svg class="icon refresh-button__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 11a8 8 0 1 0-2.34 5.66"></path>
+              <path d="M20 4v7h-7"></path>
+            </svg>
+            <span>Perbarui</span>
+          </button>
+        </div>
+
+        <div class="locations-list" id="locations-list" aria-live="polite"></div>
+
+        <div class="empty-state glass-card" id="locations-empty" hidden>
+          <span class="empty-state__icon" aria-hidden="true">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path>
+              <circle cx="12" cy="10" r="2.4"></circle>
+            </svg>
+          </span>
+          <h3>Belum ada lokasi tersimpan</h3>
+          <p>Tambahkan kota pertamamu untuk melihat cuacanya di sini.</p>
+          <button type="button" class="empty-state__action" id="empty-add">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            Tambah lokasi
+          </button>
+        </div>
+      </section>
+
+      <noscript>
+        <p class="noscript">Aktifkan JavaScript untuk mencari dan menyimpan lokasi cuaca.</p>
+      </noscript>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer__inner">
+      <span class="footer__brand">
+        <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <circle fill="#e6d2b5" cx="34" cy="15" r="7"></circle>
+          <path d="M14 37h20.4a7.6 7.6 0 0 0 .7-15.16A11.2 11.2 0 0 0 14.36 22.7 7.15 7.15 0 0 0 14 37Z" fill="currentColor"></path>
+        </svg>
+        WeatherNow <span class="footer__copy">· Cuaca Saya</span>
+      </span>
+      <span>Data oleh <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a> · <a href="index.html">Kembali ke beranda</a></span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast__message" id="toast-message"></span>
+    <button type="button" class="toast__undo" id="toast-undo">Urungkan</button>
+  </div>
+
+  <script src="locations.js" defer></script>
+</body>
+</html>
