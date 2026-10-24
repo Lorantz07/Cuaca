@@ -12,6 +12,7 @@ Dashboard cuaca statis dengan tampilan liquid glass, data live dari Open-Meteo, 
 - Kualitas udara (US AQI dan PM2.5) dan saran cuaca harian
 - Tema gelap/terang yang tersimpan, kota terakhir yang berhasil dimuat juga diingat
 - Responsif untuk desktop dan ponsel; bagian per jam dan harian bisa digeser horizontal
+- Mode performa di ponsel memakai kaca semi-opaque tanpa backdrop blur agar kartu tidak kosong saat scroll, sementara efek kaca penuh tetap aktif di desktop
 - Background dan ikon Meteocons disimpan secara lokal
 
 Daftar Cuaca Saya disimpan di `localStorage` browser pengguna. Tidak ada akun atau database, sehingga daftar tidak tersinkron antarperangkat dan hanya tersedia di browser yang sama. Menghapus data situs atau memakai mode privat akan menghapus daftar tersebut.

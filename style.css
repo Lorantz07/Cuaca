@@ -1949,3 +1949,51 @@ body.is-loading .loading-bar { opacity: 1; }
 
   .chart-line { stroke-dashoffset: 0; animation: none; }
 }
+
+/* =========================================================
+   Mobile render performance
+   ========================================================= */
+
+/*
+ * Mobile GPUs can evict the blurred backdrop tiles of glass surfaces while
+ * scrolling, which makes parts of a card appear blank until it is redrawn.
+ * Keep the same translucent look with layered gradients and a solid tint,
+ * but avoid per-frame backdrop blur on phones.
+ */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .glass-card,
+  .search,
+  .search-status,
+  .chip,
+  .live-badge,
+  .stat,
+  .header-add {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .glass-card::before { display: none; }
+  .ambient__photo { will-change: auto; }
+
+  .glass-card,
+  .search-status,
+  .chip,
+  .live-badge {
+    background-color: rgba(6, 17, 36, 0.62);
+  }
+
+  .search { background-color: rgba(6, 17, 36, 0.70); }
+
+  .stat { background-color: rgba(5, 12, 28, 0.52); }
+
+  [data-theme="light"] .glass-card,
+  [data-theme="light"] .search-status,
+  [data-theme="light"] .chip,
+  [data-theme="light"] .live-badge {
+    background-color: rgba(255, 255, 255, 0.48);
+  }
+
+  [data-theme="light"] .search { background-color: rgba(255, 255, 255, 0.62); }
+
+  [data-theme="light"] .stat { background-color: rgba(255, 255, 255, 0.68); }
+}

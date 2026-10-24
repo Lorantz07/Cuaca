@@ -1489,3 +1489,23 @@
   .city-card__range { font-size: 8px; }
   .city-card__reading { padding-right: 8px; }
 }
+
+/* Keep the mobile glass surfaces visually solid without backdrop blur. */
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
+  .locations-stat,
+  .refresh-button,
+  .toast {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .locations-stat,
+  .refresh-button {
+    background-color: rgba(6, 17, 36, 0.62);
+  }
+
+  [data-theme="light"] .locations-stat,
+  [data-theme="light"] .refresh-button {
+    background-color: rgba(255, 255, 255, 0.48);
+  }
+}
