@@ -39,46 +39,48 @@
   <div class="loading-bar" aria-hidden="true"></div>
 
   <header class="site-header" id="top">
-    <div class="container header__inner">
-      <a class="brand" href="#top" aria-label="WeatherNow — kembali ke atas">
-        <span class="brand__mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none">
-            <circle class="brand__sun" cx="34" cy="15" r="7" opacity=".95"></circle>
-            <path d="M14 37h20.4a7.6 7.6 0 0 0 .7-15.16A11.2 11.2 0 0 0 14.36 22.7 7.15 7.15 0 0 0 14 37Z" fill="currentColor"></path>
-          </svg>
-        </span>
-        <span class="brand__name">WeatherNow</span>
-      </a>
-
-      <nav class="nav" id="primary-nav" aria-label="Navigasi utama">
-        <a class="nav__link is-active" href="#top">Beranda</a>
-        <a class="nav__link" href="#current">Hari Ini</a>
-        <a class="nav__link" href="#hourly">Per Jam</a>
-        <a class="nav__link" href="#daily">7 Hari</a>
-      </nav>
-
-      <div class="header__actions">
-        <div class="theme-switch" role="group" aria-label="Pilih tema tampilan">
-          <button type="button" class="theme-switch__btn" data-theme-value="light" aria-label="Aktifkan mode terang" aria-pressed="false">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path>
+    <div class="container">
+      <div class="header__inner">
+        <a class="brand" href="#top" aria-label="WeatherNow — kembali ke atas">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 48 48" fill="none">
+              <circle class="brand__sun" cx="34" cy="15" r="7" opacity=".95"></circle>
+              <path d="M14 37h20.4a7.6 7.6 0 0 0 .7-15.16A11.2 11.2 0 0 0 14.36 22.7 7.15 7.15 0 0 0 14 37Z" fill="currentColor"></path>
             </svg>
-          </button>
-          <button type="button" class="theme-switch__btn" data-theme-value="dark" aria-label="Aktifkan mode gelap" aria-pressed="true">
-            <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M20.3 14.2A8.4 8.4 0 0 1 9.8 3.7 8.5 8.5 0 1 0 20.3 14.2Z"></path>
+          </span>
+          <span class="brand__name">WeatherNow</span>
+        </a>
+
+        <nav class="nav" id="primary-nav" aria-label="Navigasi utama">
+          <a class="nav__link is-active" href="#top">Beranda</a>
+          <a class="nav__link" href="#current">Hari Ini</a>
+          <a class="nav__link" href="#hourly">Per Jam</a>
+          <a class="nav__link" href="#daily">7 Hari</a>
+        </nav>
+
+        <div class="header__actions">
+          <div class="theme-switch" role="group" aria-label="Pilih tema tampilan">
+            <button type="button" class="theme-switch__btn" data-theme-value="light" aria-label="Aktifkan mode terang" aria-pressed="false">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path>
+              </svg>
+            </button>
+            <button type="button" class="theme-switch__btn" data-theme-value="dark" aria-label="Aktifkan mode gelap" aria-pressed="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M20.3 14.2A8.4 8.4 0 0 1 9.8 3.7 8.5 8.5 0 1 0 20.3 14.2Z"></path>
+              </svg>
+            </button>
+          </div>
+          <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-expanded="false" aria-controls="primary-nav">
+            <svg class="menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              <path d="M3.5 7h17M3.5 12h17M3.5 17h17"></path>
+            </svg>
+            <svg class="menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18"></path>
             </svg>
           </button>
         </div>
-        <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-expanded="false" aria-controls="primary-nav">
-          <svg class="menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-            <path d="M3.5 7h17M3.5 12h17M3.5 17h17"></path>
-          </svg>
-          <svg class="menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
-            <path d="M6 6l12 12M18 6 6 18"></path>
-          </svg>
-        </button>
       </div>
     </div>
   </header>
