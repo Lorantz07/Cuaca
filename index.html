@@ -32,8 +32,6 @@
   <div class="ambient" aria-hidden="true">
     <div class="ambient__photo ambient__photo--night"></div>
     <div class="ambient__photo ambient__photo--day"></div>
-    <div class="ambient__aurora ambient__aurora--a"></div>
-    <div class="ambient__aurora ambient__aurora--b"></div>
     <div class="ambient__scrim"></div>
     <div class="ambient__noise"></div>
   </div>
@@ -45,14 +43,7 @@
       <a class="brand" href="#top" aria-label="WeatherNow — kembali ke atas">
         <span class="brand__mark" aria-hidden="true">
           <svg viewBox="0 0 48 48" fill="none">
-            <defs>
-              <linearGradient id="brand-sun" x1="26" y1="8" x2="42" y2="24" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#93C5FD"></stop>
-                <stop offset=".55" stop-color="#A78BFA"></stop>
-                <stop offset="1" stop-color="#F0ABFC"></stop>
-              </linearGradient>
-            </defs>
-            <circle cx="34" cy="15" r="7" fill="url(#brand-sun)" opacity=".95"></circle>
+            <circle class="brand__sun" cx="34" cy="15" r="7" opacity=".95"></circle>
             <path d="M14 37h20.4a7.6 7.6 0 0 0 .7-15.16A11.2 11.2 0 0 0 14.36 22.7 7.15 7.15 0 0 0 14 37Z" fill="currentColor"></path>
           </svg>
         </span>
@@ -81,9 +72,12 @@
           </button>
         </div>
         <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-expanded="false" aria-controls="primary-nav">
-          <span></span>
-          <span></span>
-          <span></span>
+          <svg class="menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+            <path d="M3.5 7h17M3.5 12h17M3.5 17h17"></path>
+          </svg>
+          <svg class="menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18"></path>
+          </svg>
         </button>
       </div>
     </div>
