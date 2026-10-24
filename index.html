@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow — Cuaca, Sederhana &amp; Indah</title>
+  <meta name="description" content="Pantau cuaca terkini, prakiraan per jam, dan prakiraan 7 hari untuk kota mana pun bersama WeatherNow.">
+  <meta name="theme-color" content="#071226" id="theme-color">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/partly-cloudy-day.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var forced = params.get('theme');
+        var saved = localStorage.getItem('weathernow:theme');
+        var system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        var theme = (forced === 'light' || forced === 'dark') ? forced : (saved === 'light' || saved === 'dark' ? saved : system);
+        document.documentElement.dataset.theme = theme;
+        var meta = document.getElementById('theme-color');
+        if (meta) meta.setAttribute('content', theme === 'light' ? '#dfefff' : '#071226');
+      } catch (error) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient__photo ambient__photo--night"></div>
+    <div class="ambient__photo ambient__photo--day"></div>
+    <div class="ambient__aurora ambient__aurora--a"></div>
+    <div class="ambient__aurora ambient__aurora--b"></div>
+    <div class="ambient__scrim"></div>
+    <div class="ambient__noise"></div>
+  </div>
+
+  <div class="loading-bar" aria-hidden="true"></div>
+
+  <header class="site-header" id="top">
+    <div class="container header__inner">
+      <a class="brand" href="#top" aria-label="WeatherNow — kembali ke atas">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none">
+            <defs>
+              <linearGradient id="brand-sun" x1="26" y1="8" x2="42" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#93C5FD"></stop>
+                <stop offset=".55" stop-color="#A78BFA"></stop>
+                <stop offset="1" stop-color="#F0ABFC"></stop>
+              </linearGradient>
+            </defs>
+            <circle cx="34" cy="15" r="7" fill="url(#brand-sun)" opacity=".95"></circle>
+            <path d="M14 37h20.4a7.6 7.6 0 0 0 .7-15.16A11.2 11.2 0 0 0 14.36 22.7 7.15 7.15 0 0 0 14 37Z" fill="currentColor"></path>
+          </svg>
+        </span>
+        <span class="brand__name">WeatherNow</span>
+      </a>
+
+      <nav class="nav" id="primary-nav" aria-label="Navigasi utama">
+        <a class="nav__link is-active" href="#top">Beranda</a>
+        <a class="nav__link" href="#current">Hari Ini</a>
+        <a class="nav__link" href="#hourly">Per Jam</a>
+        <a class="nav__link" href="#daily">7 Hari</a>
+      </nav>
+
+      <div class="header__actions">
+        <div class="theme-switch" role="group" aria-label="Pilih tema tampilan">
+          <button type="button" class="theme-switch__btn" data-theme-value="light" aria-label="Aktifkan mode terang" aria-pressed="false">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"></circle>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path>
+            </svg>
+          </button>
+          <button type="button" class="theme-switch__btn" data-theme-value="dark" aria-label="Aktifkan mode gelap" aria-pressed="true">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20.3 14.2A8.4 8.4 0 0 1 9.8 3.7 8.5 8.5 0 1 0 20.3 14.2Z"></path>
+            </svg>
+          </button>
+        </div>
+        <button type="button" class="menu-toggle" id="menu-toggle" aria-label="Buka menu" aria-expanded="false" aria-controls="primary-nav">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container" aria-labelledby="hero-title">
+      <div class="hero__content">
+        <p class="live-badge"><span class="live-badge__dot" aria-hidden="true"></span> Cuaca Langsung</p>
+        <h1 class="hero__title" id="hero-title">Cuaca,<br><span class="hero__title-line">Sederhana <span class="hero__title-accent">&amp; Indah</span></span></h1>
+        <p class="hero__text">Dapatkan informasi cuaca terkini dan prakiraan hingga 7 hari untuk membantumu beraktivitas dengan lebih baik.</p>
+
+        <form class="search" id="search-form" role="search" novalidate>
+          <svg class="search__icon icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5"></path>
+          </svg>
+          <label class="sr-only" for="city-input">Cari nama kota</label>
+          <input class="search__input" id="city-input" name="city" type="search" placeholder="Cari nama kota…" autocomplete="off" spellcheck="false" aria-describedby="search-status">
+          <button class="search__submit" type="submit" aria-label="Cari cuaca kota">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 12h14"></path>
+              <path d="m12 6 6 6-6 6"></path>
+            </svg>
+          </button>
+        </form>
+        <p class="search-status" id="search-status" role="status">Menyiapkan data cuaca…</p>
+
+        <div class="chips" aria-label="Kota populer">
+          <button type="button" class="chip is-active" data-city="Jakarta">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+            Jakarta
+          </button>
+          <button type="button" class="chip" data-city="Bandung">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+            Bandung
+          </button>
+          <button type="button" class="chip" data-city="Surabaya">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+            Surabaya
+          </button>
+          <button type="button" class="chip" data-city="Yogyakarta">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+            Yogyakarta
+          </button>
+          <button type="button" class="chip" data-city="Denpasar">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+            Denpasar
+          </button>
+        </div>
+      </div>
+
+      <section class="current glass-card" id="current" aria-labelledby="current-city" aria-busy="true">
+        <div class="current__glow" aria-hidden="true"></div>
+        <div class="current__head">
+          <div class="current__place">
+            <span class="current__pin" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.7 7-11a7 7 0 1 0-14 0c0 5.3 7 11 7 11Z"></path><circle cx="12" cy="10" r="2.4"></circle></svg>
+            </span>
+            <div>
+              <h2 class="current__city" id="current-city">Memuat…</h2>
+              <p class="current__region" id="current-region">Menyiapkan data cuaca</p>
+            </div>
+          </div>
+          <time class="current__date" id="current-date">—</time>
+        </div>
+
+        <div class="current__main">
+          <div class="current__visual" aria-hidden="true">
+            <span class="current__orb"></span>
+            <img class="current__icon" id="current-icon" src="assets/icons/partly-cloudy-day.svg" alt="" width="150" height="150" fetchpriority="high">
+          </div>
+          <div class="current__temp-block">
+            <p class="current__temp"><span id="current-temp">—</span><span class="current__unit">°C</span></p>
+            <p class="current__condition" id="current-condition">Mengambil data cuaca…</p>
+            <p class="current__feels">Terasa seperti <span id="current-feels">—</span></p>
+            <p class="current__range">
+              <span class="current__range-item"><span class="arrow arrow--up" aria-hidden="true">↑</span><span id="current-high">—</span></span>
+              <span class="current__range-item"><span class="arrow arrow--down" aria-hidden="true">↓</span><span id="current-low">—</span></span>
+            </p>
+          </div>
+        </div>
+
+        <div class="current__stats">
+          <div class="stat">
+            <span class="stat__icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.2 6 11a6 6 0 0 1-12 0c0-4.8 6-11 6-11Z"></path></svg>
+            </span>
+            <span class="stat__body"><span class="stat__label">Kelembapan</span><strong class="stat__value" id="current-humidity">—</strong></span>
+          </div>
+          <div class="stat">
+            <span class="stat__icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h9a3 3 0 1 0-3-3"></path><path d="M4 12h13a3 3 0 1 1-3 3"></path><path d="M4 16h6"></path></svg>
+            </span>
+            <span class="stat__body"><span class="stat__label">Angin</span><strong class="stat__value" id="current-wind">—</strong></span>
+          </div>
+          <div class="stat">
+            <span class="stat__icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 15a4.2 4.2 0 0 1-.7-8.34A5.6 5.6 0 0 1 17.4 8.2 3.6 3.6 0 0 1 18 15"></path><path d="M8 18v2M12 18v3M16 18v2"></path></svg>
+            </span>
+            <span class="stat__body"><span class="stat__label">Peluang Hujan</span><strong class="stat__value" id="current-rain">—</strong></span>
+          </div>
+        </div>
+
+        <svg class="current__hills" viewBox="0 0 720 180" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 128C58 98 116 112 178 88C240 64 298 106 362 94C426 82 474 108 540 86C604 66 660 96 720 80V180H0Z" fill="currentColor" opacity=".16"></path>
+          <path d="M0 152C66 128 132 142 202 122C272 102 334 138 414 126C494 114 546 140 608 124C660 111 692 130 720 121V180H0Z" fill="currentColor" opacity=".11"></path>
+          <path d="M0 169C92 151 154 165 234 153C314 141 376 163 456 156C536 149 614 159 720 145V180H0Z" fill="currentColor" opacity=".08"></path>
+        </svg>
+      </section>
+    </section>
+
+    <section class="dashboard container" aria-label="Ringkasan prakiraan cuaca">
+      <div class="dashboard__main">
+        <section class="panel glass-card hourly" id="hourly" aria-labelledby="hourly-title" aria-busy="true">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title" id="hourly-title">Prakiraan Hari Ini</h2>
+              <p class="panel__sub" id="hourly-sub">Memuat lokasi…</p>
+            </div>
+            <span class="panel__badge">24 jam</span>
+          </div>
+          <p class="panel__placeholder" id="hourly-placeholder">Memuat prakiraan per jam…</p>
+          <div class="hourly__scroller" id="hourly-scroller" tabindex="0" aria-label="Prakiraan cuaca per jam. Geser ke samping untuk melihat jam berikutnya.">
+            <div class="hourly__track" id="hourly-track">
+              <div class="hourly__items" id="hourly-items"></div>
+              <svg class="hourly__chart" id="hourly-chart" viewBox="0 0 800 64" preserveAspectRatio="none" aria-hidden="true"></svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel glass-card daily" id="daily" aria-labelledby="daily-title" aria-busy="true">
+          <div class="panel__head">
+            <div>
+              <h2 class="panel__title" id="daily-title">Prakiraan 7 Hari ke Depan</h2>
+              <p class="panel__sub" id="daily-sub">Memuat lokasi…</p>
+            </div>
+          </div>
+          <p class="panel__placeholder" id="daily-placeholder">Memuat prakiraan 7 hari…</p>
+          <div class="daily__scroller" id="daily-scroller" aria-label="Prakiraan cuaca tujuh hari">
+            <div class="daily__grid" id="daily-grid"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="dashboard__side" aria-label="Detail dan saran cuaca">
+        <section class="panel glass-card details" aria-labelledby="details-title">
+          <div class="panel__head panel__head--compact">
+            <h2 class="panel__title" id="details-title">Detail Cuaca</h2>
+            <span class="panel__badge panel__badge--icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.3 17a9 9 0 1 1 17.4 0"></path><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path><path d="m13.4 11.6 3.1-3.1"></path></svg>
+            </span>
+          </div>
+          <ul class="details__list">
+            <li class="details__row">
+              <span class="details__label">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.3 17a9 9 0 1 1 17.4 0"></path><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path><path d="m13.4 11.6 3.1-3.1"></path></svg>
+                Tekanan Udara
+              </span>
+              <strong class="details__value" id="detail-pressure">—</strong>
+            </li>
+            <li class="details__row">
+              <span class="details__label">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
+                Indeks UV
+              </span>
+              <strong class="details__value"><span id="detail-uv">—</span> <span class="uv-badge" id="detail-uv-badge">—</span></strong>
+            </li>
+            <li class="details__row">
+              <span class="details__label">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                Jarak Pandang
+              </span>
+              <strong class="details__value" id="detail-visibility">—</strong>
+            </li>
+            <li class="details__row">
+              <span class="details__label">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v5"></path><path d="m9 6 3-3 3 3"></path><path d="M4 18a8 8 0 0 1 16 0"></path><path d="M2 21h20"></path></svg>
+                Matahari Terbit
+              </span>
+              <strong class="details__value" id="detail-sunrise">—</strong>
+            </li>
+            <li class="details__row">
+              <span class="details__label">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8V3"></path><path d="m9 6 3 3 3-3"></path><path d="M4 18a8 8 0 0 1 16 0"></path><path d="M2 21h20"></path></svg>
+                Matahari Terbenam
+              </span>
+              <strong class="details__value" id="detail-sunset">—</strong>
+            </li>
+          </ul>
+        </section>
+
+        <section class="panel glass-card aqi" id="aqi-card" aria-labelledby="aqi-title" aria-busy="true">
+          <div class="aqi__head">
+            <span class="aqi__icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5C11 3.5 5 7.6 5 14a5.5 5.5 0 0 0 5.5 5.5c6.4 0 10-6.5 10-16Z"></path><path d="M3.5 21c2.2-5.2 5.8-8.8 10.5-10.8"></path></svg>
+            </span>
+            <div>
+              <h2 class="panel__title" id="aqi-title">Kualitas Udara</h2>
+              <p class="panel__sub">Indeks AQI (US)</p>
+            </div>
+          </div>
+          <div class="aqi__value">
+            <strong class="aqi__number" id="aqi-value">—</strong>
+            <span class="aqi__label" id="aqi-label">Memuat…</span>
+          </div>
+          <div class="aqi__bar" aria-hidden="true"><span class="aqi__fill" id="aqi-fill"></span></div>
+          <p class="aqi__note" id="aqi-note">Mengambil data kualitas udara…</p>
+        </section>
+
+        <section class="panel glass-card tip" aria-labelledby="tip-title">
+          <div class="tip__visual" aria-hidden="true">
+            <img id="tip-icon" src="assets/icons/umbrella.svg" alt="" width="46" height="46">
+          </div>
+          <div class="tip__body">
+            <h2 class="panel__title" id="tip-title">Saran Hari Ini</h2>
+            <p class="tip__text" id="tip-text">Menyiapkan saran untukmu…</p>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <noscript>
+      <div class="container">
+        <p class="noscript">Aktifkan JavaScript untuk melihat data cuaca terkini dari Open-Meteo.</p>
+      </div>
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 19h10a4.5 4.5 0 0 0 .5-8.97A6.5 6.5 0 0 0 5 12.5 3.5 3.5 0 0 0 7 19Z"></path></svg>
+        WeatherNow <span class="footer__copy">© <span id="current-year">2026</span></span>
+      </p>
+      <p>Data cuaca oleh <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a></p>
+      <p>Ikon <a href="https://meteocons.com/" target="_blank" rel="noopener noreferrer">Meteocons</a> · Foto <a href="https://unsplash.com/" target="_blank" rel="noopener noreferrer">Unsplash</a></p>
+    </div>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
