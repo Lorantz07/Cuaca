@@ -337,7 +337,7 @@
       if (error && error.name === "AbortError") return;
       if (signal.aborted) return;
 
-      console.error("WeatherNow:", error);
+      console.error("NandaSky:", error);
 
       let message = "Gagal memuat data cuaca. Periksa koneksi lalu coba lagi.";
       if (error && error.name === "TimeoutError") {

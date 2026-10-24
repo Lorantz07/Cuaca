@@ -581,7 +581,7 @@
     card.setAttribute("aria-busy", "false");
 
     if (error && error.name !== "TimeoutError") {
-      console.warn("WeatherNow locations:", error);
+      console.warn("NandaSky locations:", error);
     }
   }
 

@@ -1,4 +1,4 @@
-# Cuaca — WeatherNow
+# Cuaca — NandaSky
 
 Dashboard cuaca statis dengan tampilan liquid glass, data live dari Open-Meteo, dan dukungan tema gelap/terang.
 

@@ -1,5 +1,5 @@
 /* =========================================================
-   WeatherNow — liquid glass weather dashboard
+   NandaSky — liquid glass weather dashboard
    ========================================================= */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -429,6 +429,8 @@ strong { font-weight: 700; }
 
 .brand__mark svg { width: 100%; height: 100%; }
 .brand__sun { fill: var(--accent); }
+
+.brand-suffix { color: var(--accent); }
 
 .nav {
   display: flex;
@@ -1645,6 +1647,7 @@ main {
 }
 
 .footer__brand svg { width: 22px; height: 22px; }
+.footer__name { white-space: nowrap; }
 
 .footer__copy {
   margin-left: 3px;
