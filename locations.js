@@ -15,6 +15,54 @@
   const DEFAULT_CITY = "Jakarta";
   const MAX_LOCATIONS = 8;
 
+  const KNOWN_PLACES = {
+    jakarta: {
+      name: "Jakarta",
+      latitude: -6.21462,
+      longitude: 106.84513,
+      admin1: "Jakarta",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    bandung: {
+      name: "Bandung",
+      latitude: -6.92222,
+      longitude: 107.60694,
+      admin1: "Jawa Barat",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    surabaya: {
+      name: "Surabaya",
+      latitude: -7.24917,
+      longitude: 112.75083,
+      admin1: "Jawa Timur",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    yogyakarta: {
+      name: "Yogyakarta",
+      latitude: -7.80139,
+      longitude: 110.36472,
+      admin1: "Yogyakarta",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    denpasar: {
+      name: "Denpasar",
+      latitude: -8.65,
+      longitude: 115.21667,
+      admin1: "Provinsi Bali",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Makassar"
+    }
+  };
+
   const WEATHER_CODES = {
     0: { label: "Cerah", icon: ["clear-day", "clear-night"] },
     1: { label: "Cerah Berawan", icon: ["partly-cloudy-day", "partly-cloudy-night"] },
@@ -96,6 +144,7 @@
 
   function init() {
     initTheme();
+    initAmbientBackgrounds();
     initHeader();
     initSearch();
     initRefresh();
@@ -123,6 +172,9 @@
 
   function applyTheme(theme, persist) {
     const next = theme === "light" ? "light" : "dark";
+    if (persist && !document.documentElement.classList.contains("ambient-ready")) {
+      document.documentElement.classList.add("ambient-ready");
+    }
     document.documentElement.dataset.theme = next;
 
     $$(".theme-switch__btn").forEach((button) => {
@@ -139,6 +191,71 @@
         /* Tema tetap berfungsi untuk sesi ini bila penyimpanan diblokir. */
       }
     }
+  }
+
+  function initAmbientBackgrounds() {
+    let preloadStarted = false;
+
+    const preload = () => {
+      if (preloadStarted) return;
+      preloadStarted = true;
+      preloadInactiveAmbient();
+    };
+
+    const schedule = () => {
+      window.addEventListener("scroll", preload, { once: true, passive: true });
+      window.addEventListener("pointerdown", preload, { once: true, passive: true });
+      window.addEventListener("keydown", preload, { once: true });
+      // Most visitors interact well before this. The fallback keeps the
+      // inactive photo ready without competing with the initial render.
+      window.setTimeout(preload, 8000);
+    };
+
+    if (document.readyState === "complete") {
+      schedule();
+    } else {
+      window.addEventListener("load", schedule, { once: true });
+    }
+  }
+
+  function preloadInactiveAmbient() {
+    if (document.documentElement.classList.contains("ambient-ready")) return;
+
+    const inactive = document.documentElement.dataset.theme === "light"
+      ? $(".ambient__photo--night")
+      : $(".ambient__photo--day");
+
+    const markReady = () => {
+      document.documentElement.classList.add("ambient-ready");
+    };
+
+    if (!inactive) {
+      markReady();
+      return;
+    }
+
+    const value = window.getComputedStyle(inactive).backgroundImage;
+    const match = /url\(["']?([^"')]+)["']?\)/.exec(value);
+    if (!match) {
+      markReady();
+      return;
+    }
+
+    const image = new Image();
+    let settled = false;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      const decoded = typeof image.decode === "function" ? image.decode() : Promise.resolve();
+      decoded.catch(() => {}).finally(markReady);
+    };
+
+    image.onload = finish;
+    image.onerror = markReady;
+    image.src = match[1];
+
+    if (image.complete && image.naturalWidth > 0) finish();
   }
 
   /* =========================================================
@@ -208,7 +325,8 @@
     setSavedSubtitle("Menyiapkan lokasi awal…");
 
     try {
-      const results = await geocode(city, 1);
+      const known = knownPlace(city);
+      const results = known ? [known] : await geocode(city, 1);
       if (!results.length) throw createUserError("Lokasi awal tidak ditemukan.");
 
       if (state.locations.length) return;
@@ -1095,6 +1213,13 @@
       .replace(/^(kota|kabupaten|kab\.?)\s+/i, "")
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function knownPlace(query) {
+    const key = normalizeCityKey(query);
+    if (!key) return null;
+    const place = KNOWN_PLACES[key];
+    return place ? { ...place } : null;
   }
 
   function displayLocationName(place) {

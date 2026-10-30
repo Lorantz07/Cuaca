@@ -2,6 +2,24 @@
    NandaSky — liquid glass weather dashboard
    ========================================================= */
 
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("assets/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("assets/fonts/plus-jakarta-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; }
 
@@ -221,6 +239,18 @@ strong { font-weight: 700; }
 [data-theme="light"] .ambient__photo--day {
   opacity: 1;
   transform: scale(1.02);
+}
+
+/* Keep the inactive theme photo out of the first paint. After it has been
+   preloaded, script.js adds .ambient-ready so the usual crossfade still works. */
+html[data-theme="dark"]:not(.ambient-ready) .ambient__photo--day,
+html[data-theme="light"]:not(.ambient-ready) .ambient__photo--night {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .ambient__photo--day { background-image: url("assets/bg-day-1280.webp"); }
+  .ambient__photo--night { background-image: url("assets/bg-night-1280.webp"); }
 }
 
 .ambient__scrim {
@@ -1657,13 +1687,14 @@ main {
 
 .footer__inner a {
   color: var(--muted);
-  border-bottom: 1px solid transparent;
-  transition: color 0.2s var(--ease), border-color 0.2s var(--ease);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color 0.2s var(--ease);
 }
 
 .footer__inner a:hover {
   color: var(--text);
-  border-bottom-color: var(--border-strong);
 }
 
 .noscript {

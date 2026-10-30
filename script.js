@@ -10,7 +10,59 @@
   const DEFAULT_CITY = "Jakarta";
   const STORAGE = {
     theme: "weathernow:theme",
-    city: "weathernow:city"
+    city: "weathernow:city",
+    weather: "weathernow:weather",
+    geocodes: "weathernow:geocodes"
+  };
+
+  const WEATHER_CACHE_MAX_AGE = 6 * 60 * 60 * 1000;
+
+  const KNOWN_PLACES = {
+    jakarta: {
+      name: "Jakarta",
+      latitude: -6.21462,
+      longitude: 106.84513,
+      admin1: "Jakarta",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    bandung: {
+      name: "Bandung",
+      latitude: -6.92222,
+      longitude: 107.60694,
+      admin1: "Jawa Barat",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    surabaya: {
+      name: "Surabaya",
+      latitude: -7.24917,
+      longitude: 112.75083,
+      admin1: "Jawa Timur",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    yogyakarta: {
+      name: "Yogyakarta",
+      latitude: -7.80139,
+      longitude: 110.36472,
+      admin1: "Yogyakarta",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Jakarta"
+    },
+    denpasar: {
+      name: "Denpasar",
+      latitude: -8.65,
+      longitude: 115.21667,
+      admin1: "Provinsi Bali",
+      country: "Indonesia",
+      country_code: "ID",
+      timezone: "Asia/Makassar"
+    }
   };
 
   const WEATHER_CODES = {
@@ -92,7 +144,8 @@
     lastQuery: "",
     lastData: null,
     hourlyTemps: [],
-    resizeTimer: null
+    resizeTimer: null,
+    airPending: false
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -106,6 +159,7 @@
 
   function init() {
     initTheme();
+    initAmbientBackgrounds();
     initHeader();
     initSearch();
     initKeyboardScrollers();
@@ -118,7 +172,15 @@
     const savedCity = getSavedCity();
     const city = savedCity || DEFAULT_CITY;
     setActiveChip(city);
-    loadCity(city, { initial: true });
+
+    const cached = readWeatherCache(city);
+    if (cached) {
+      state.lastData = cached.view;
+      renderView(cached.view, { airPending: !cached.view.aqi });
+      setStatus("Menampilkan data tersimpan. Memperbarui cuaca…");
+    }
+
+    loadCity(city, { initial: true, hasCache: Boolean(cached) });
   }
 
   /* =========================================================
@@ -138,6 +200,9 @@
 
   function applyTheme(theme, persist) {
     const next = theme === "light" ? "light" : "dark";
+    if (persist && !document.documentElement.classList.contains("ambient-ready")) {
+      document.documentElement.classList.add("ambient-ready");
+    }
     document.documentElement.dataset.theme = next;
 
     $$(".theme-switch__btn").forEach((button) => {
@@ -156,6 +221,71 @@
         /* localStorage bisa diblokir; tema tetap berfungsi untuk sesi ini. */
       }
     }
+  }
+
+  function initAmbientBackgrounds() {
+    let preloadStarted = false;
+
+    const preload = () => {
+      if (preloadStarted) return;
+      preloadStarted = true;
+      preloadInactiveAmbient();
+    };
+
+    const schedule = () => {
+      window.addEventListener("scroll", preload, { once: true, passive: true });
+      window.addEventListener("pointerdown", preload, { once: true, passive: true });
+      window.addEventListener("keydown", preload, { once: true });
+      // Most visitors interact well before this. The fallback keeps the
+      // inactive photo ready without competing with the initial render.
+      window.setTimeout(preload, 8000);
+    };
+
+    if (document.readyState === "complete") {
+      schedule();
+    } else {
+      window.addEventListener("load", schedule, { once: true });
+    }
+  }
+
+  function preloadInactiveAmbient() {
+    if (document.documentElement.classList.contains("ambient-ready")) return;
+
+    const inactive = document.documentElement.dataset.theme === "light"
+      ? $(".ambient__photo--night")
+      : $(".ambient__photo--day");
+
+    const markReady = () => {
+      document.documentElement.classList.add("ambient-ready");
+    };
+
+    if (!inactive) {
+      markReady();
+      return;
+    }
+
+    const value = window.getComputedStyle(inactive).backgroundImage;
+    const match = /url\(["']?([^"')]+)["']?\)/.exec(value);
+    if (!match) {
+      markReady();
+      return;
+    }
+
+    const image = new Image();
+    let settled = false;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      const decoded = typeof image.decode === "function" ? image.decode() : Promise.resolve();
+      decoded.catch(() => {}).finally(markReady);
+    };
+
+    image.onload = finish;
+    image.onerror = markReady;
+    image.src = match[1];
+
+    if (image.complete && image.naturalWidth > 0) finish();
   }
 
   /* =========================================================
@@ -198,16 +328,24 @@
     if (!links.length || !sections.length) return;
 
     let ticking = false;
+    let sectionTops = [];
+
+    const measure = () => {
+      sectionTops = sections.map((section) => ({
+        id: section.id,
+        top: section.getBoundingClientRect().top + window.scrollY
+      }));
+    };
 
     const update = () => {
       ticking = false;
-      const marker = window.scrollY + window.innerHeight * 0.32;
+      const y = window.scrollY;
+      const marker = y + window.innerHeight * 0.32;
       let active = "top";
 
-      if (window.scrollY > 80) {
-        sections.forEach((section) => {
-          const top = section.getBoundingClientRect().top + window.scrollY;
-          if (top <= marker) active = section.id;
+      if (y > 80) {
+        sectionTops.forEach((section) => {
+          if (section.top <= marker) active = section.id;
         });
       }
 
@@ -222,8 +360,30 @@
       window.requestAnimationFrame(update);
     };
 
+    const remeasure = () => {
+      measure();
+      update();
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    update();
+
+    let resizeFrame = 0;
+    window.addEventListener("resize", () => {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(remeasure);
+    }, { passive: true });
+
+    const main = $("main");
+    if (main && typeof ResizeObserver === "function") {
+      let observerFrame = 0;
+      const observer = new ResizeObserver(() => {
+        window.cancelAnimationFrame(observerFrame);
+        observerFrame = window.requestAnimationFrame(remeasure);
+      });
+      observer.observe(main);
+    }
+
+    remeasure();
   }
 
   function initKeyboardScrollers() {
@@ -285,6 +445,7 @@
     if (!normalized) return;
 
     state.lastQuery = normalized;
+    state.airPending = false;
 
     if (state.controller) state.controller.abort();
     const controller = new AbortController();
@@ -292,38 +453,35 @@
     const { signal } = controller;
 
     setLoading(true);
-    setStatus(options.initial ? `Memuat cuaca ${normalized}…` : `Mencari ${normalized}…`);
+    setStatus(
+      options.hasCache
+        ? `Memperbarui cuaca ${normalized}…`
+        : options.initial
+          ? `Memuat cuaca ${normalized}…`
+          : `Mencari ${normalized}…`
+    );
 
     try {
-      const geocodingUrl = `${API.geocoding}?name=${encodeURIComponent(normalized)}&count=1&language=id&format=json`;
-      const geocoding = await fetchJson(geocodingUrl, signal);
-
+      const place = await resolvePlace(normalized, signal);
       if (signal.aborted) return;
-
-      const place = Array.isArray(geocoding.results) ? geocoding.results[0] : null;
-      if (!place) {
-        throw createUserError("Kota tidak ditemukan. Coba nama kota lain.");
-      }
 
       setStatus(`Memuat cuaca ${place.name}…`);
 
-      const [forecastResult, airResult] = await Promise.allSettled([
-        fetchJson(buildForecastUrl(place), signal),
-        fetchJson(buildAirUrl(place), signal)
-      ]);
+      // Start both requests together, but paint the forecast as soon as it is
+      // ready. Air quality can fill in a moment later without delaying the LCP.
+      const airPromise = fetchJson(buildAirUrl(place), signal)
+        .then((air) => air)
+        .catch(() => null);
 
+      const forecast = await fetchJson(buildForecastUrl(place), signal);
       if (signal.aborted) return;
 
-      if (forecastResult.status === "rejected") {
-        throw forecastResult.reason;
-      }
-
-      const forecast = forecastResult.value;
-      const air = airResult.status === "fulfilled" ? airResult.value : null;
-      const view = buildView(place, forecast, air);
-
-      renderView(view);
+      const view = buildView(place, forecast, null);
       state.lastData = view;
+      state.airPending = true;
+
+      renderView(view, { airPending: true });
+      saveWeatherCache(view);
 
       const displayName = canonicalCityName(place.name);
       saveCity(displayName || place.name);
@@ -333,6 +491,18 @@
       if (input) input.value = "";
 
       setStatus(`Diperbarui pukul ${formatClock(view.current.time)} waktu setempat.`);
+
+      airPromise.then((air) => {
+        if (signal.aborted) return;
+
+        const nextView = air ? buildView(place, forecast, air) : view;
+        state.airPending = false;
+        state.lastData = nextView;
+        renderAir(nextView);
+        renderTip(nextView);
+        saveWeatherCache(nextView);
+        setBusy("aqi-card", false);
+      });
     } catch (error) {
       if (error && error.name === "AbortError") return;
       if (signal.aborted) return;
@@ -356,8 +526,29 @@
       if (state.controller === controller) {
         state.controller = null;
         setLoading(false);
+        if (state.airPending) setBusy("aqi-card", true);
       }
     }
+  }
+
+  async function resolvePlace(query, signal) {
+    const known = knownPlace(query);
+    if (known) return known;
+
+    const cached = readCachedGeocode(query);
+    if (cached) return cached;
+
+    const geocodingUrl = `${API.geocoding}?name=${encodeURIComponent(query)}&count=1&language=id&format=json`;
+    const geocoding = await fetchJson(geocodingUrl, signal);
+    if (signal.aborted) return null;
+
+    const place = Array.isArray(geocoding.results) ? geocoding.results[0] : null;
+    if (!place) {
+      throw createUserError("Kota tidak ditemukan. Coba nama kota lain.");
+    }
+
+    saveCachedGeocode(query, place);
+    return place;
   }
 
   async function fetchJson(url, signal) {
@@ -583,12 +774,14 @@
      Rendering
      ========================================================= */
 
-  function renderView(view) {
+  function renderView(view, options = {}) {
+    const airPending = Boolean(options.airPending);
+
     renderCurrent(view);
     renderHourly(view);
     renderDaily(view);
     renderDetails(view);
-    renderAir(view);
+    renderAir(view, airPending);
     renderTip(view);
 
     const hourlyPlaceholder = $("#hourly-placeholder");
@@ -598,7 +791,7 @@
 
     setBusy("hourly", false);
     setBusy("daily", false);
-    setBusy("aqi-card", false);
+    setBusy("aqi-card", airPending);
     setBusy("current", false);
   }
 
@@ -710,7 +903,7 @@
     }
   }
 
-  function renderAir(view) {
+  function renderAir(view, pending = false) {
     const card = $("#aqi-card");
     if (!card) return;
 
@@ -719,8 +912,11 @@
     if (!view.aqi) {
       card.classList.add("aqi--unknown");
       setText("#aqi-value", "—");
-      setText("#aqi-label", "Tidak tersedia");
-      setText("#aqi-note", "Data kualitas udara tidak tersedia.");
+      setText("#aqi-label", pending ? "Memuat…" : "Tidak tersedia");
+      setText(
+        "#aqi-note",
+        pending ? "Mengambil data kualitas udara…" : "Data kualitas udara tidak tersedia."
+      );
       const emptyFill = $("#aqi-fill");
       if (emptyFill) emptyFill.style.width = "0%";
       return;
@@ -836,8 +1032,13 @@
   }
 
   function initResize() {
+    let lastWidth = window.innerWidth;
+
     window.addEventListener("resize", () => {
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
       if (!state.hourlyTemps.length) return;
+
       window.clearTimeout(state.resizeTimer);
       state.resizeTimer = window.setTimeout(() => renderChart(state.hourlyTemps), 140);
     }, { passive: true });
@@ -914,6 +1115,91 @@
       localStorage.setItem(STORAGE.city, city);
     } catch (error) {
       /* Tidak masalah jika penyimpanan diblokir. */
+    }
+  }
+
+  function knownPlace(query) {
+    const key = normalizeCityKey(query);
+    if (!key) return null;
+    const place = KNOWN_PLACES[key];
+    return place ? { ...place } : null;
+  }
+
+  function readCachedGeocode(query) {
+    const key = normalizeCityKey(query);
+    if (!key) return null;
+
+    const entries = readGeocodeEntries();
+    const match = entries.find((entry) => entry.key === key && isCachedPlace(entry.place));
+    return match ? match.place : null;
+  }
+
+  function saveCachedGeocode(query, place) {
+    const key = normalizeCityKey(query);
+    if (!key || !isCachedPlace(place)) return;
+
+    try {
+      const entries = readGeocodeEntries()
+        .filter((entry) => entry && entry.key !== key)
+        .slice(0, 23);
+      entries.unshift({ key, place });
+      localStorage.setItem(STORAGE.geocodes, JSON.stringify(entries));
+    } catch (error) {
+      /* Cache pencarian hanya sebuah percepatan opsional. */
+    }
+  }
+
+  function readGeocodeEntries() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE.geocodes) || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function isCachedPlace(place) {
+    return Boolean(
+      place &&
+      typeof place.name === "string" &&
+      Number.isFinite(Number(place.latitude)) &&
+      Number.isFinite(Number(place.longitude))
+    );
+  }
+
+  function readWeatherCache(city) {
+    try {
+      const cached = JSON.parse(localStorage.getItem(STORAGE.weather) || "null");
+      if (!cached || !cached.view || !Number.isFinite(cached.savedAt)) return null;
+      if (Date.now() - cached.savedAt > WEATHER_CACHE_MAX_AGE) return null;
+
+      const view = cached.view;
+      if (
+        !view.place ||
+        !view.current ||
+        !Array.isArray(view.hours) ||
+        !view.hours.length ||
+        normalizeCityKey(view.place.name) !== normalizeCityKey(city)
+      ) {
+        return null;
+      }
+
+      return { savedAt: cached.savedAt, view };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveWeatherCache(view) {
+    if (!view || !view.place || !view.current) return;
+
+    try {
+      const payload = JSON.stringify({ savedAt: Date.now(), view });
+      if (payload.length < 200000) {
+        localStorage.setItem(STORAGE.weather, payload);
+      }
+    } catch (error) {
+      /* Data tetap tampil meski cache tidak dapat ditulis. */
     }
   }
 
